@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Dashboard | AEC OMR System</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <!-- ===================================================== -->
+    <!-- NAVBAR -->
+    <!-- ===================================================== -->
+
+    <nav class="navbar">
+
+        <h1>AEC OMR System</h1>
+
+        <div class="navbar-links">
+
+            <a href="/student">
+                Dashboard
+            </a>
+
+            <a href="/logout">
+                Logout
+            </a>
+
+        </div>
+
+    </nav>
+
+    <!-- ===================================================== -->
+    <!-- MAIN CONTAINER -->
+    <!-- ===================================================== -->
+
+    <div class="container">
+
+        <!-- ================================================= -->
+        <!-- WELCOME CARD -->
+        <!-- ================================================= -->
+
+        <div class="card">
+
+            <h2>
+                Welcome, {{ user.email }}
+            </h2>
+
+            <p>
+                Student Dashboard - View your exam
+                performance and OMR results.
+            </p>
+
+        </div>
+
+        <!-- ================================================= -->
+        <!-- RESULT STATS -->
+        <!-- ================================================= -->
+
+        <div class="stats">
+
+            <div class="stat-card">
+
+                <h2>
+                    {{ results|length }}
+                </h2>
+
+                <p>
+                    Total Exams
+                </p>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h2>
+
+                    {% if results %}
+
+                    {{
+                    (
+                    results
+                    | map(attribute='score')
+                    | sum
+                    / results|length
+                    ) | round(2)
+                    }}%
+
+                    {% else %}
+
+                    0%
+
+                    {% endif %}
+
+                </h2>
+
+                <p>
+                    Average Score
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- ================================================= -->
+        <!-- RESULTS TABLE -->
+        <!-- ================================================= -->
+
+        <div class="card">
+
+            <h3>
+                Exam Results
+            </h3>
+
+            {% if results %}
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Exam Code
+                            </th>
+
+                            <th>
+                                Score (%)
+                            </th>
+
+                            <th>
+                                Correct
+                            </th>
+
+                            <th>
+                                Incorrect
+                            </th>
+
+                            <th>
+                                Performance
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for result in results %}
+
+                        <tr>
+
+                            <td>
+                                {{ result.exam_code }}
+                            </td>
+
+                            <td>
+                                {{ result.score }}%
+                            </td>
+
+                            <td>
+                                {{ result.correct_answers }}
+                            </td>
+
+                            <td>
+                                {{ result.incorrect_answers }}
+                            </td>
+
+                            <td>
+
+                                {% if result.score >= 80 %}
+
+                                Excellent
+
+                                {% elif result.score >= 60 %}
+
+                                Good
+
+                                {% elif result.score >= 40 %}
+
+                                Average
+
+                                {% else %}
+
+                                Poor
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="error">
+
+                No results available yet.
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- FOOTER -->
+    <!-- ===================================================== -->
+
+    <div class="footer">
+
+        © 2026 AEC Automated OMR System
+
+    </div>
+
+</body>
+
+</html>

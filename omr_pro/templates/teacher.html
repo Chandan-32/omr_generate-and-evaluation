@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMR System | Teacher Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <nav class="navbar">
+        <h1>OMR System</h1>
+        <div class="navbar-links">
+            <a href="/teacher">Dashboard</a>
+            <a href="/results">Results</a>
+            
+            <div class="profile-wrapper">
+                {% if current_user.profile_pic %}
+                    <img src="{{ url_for('static', filename='profile_pics/' ~ current_user.profile_pic) }}" alt="Profile" class="profile-avatar">
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ current_user.email }}&background=2563eb&color=fff&rounded=true" alt="Profile" class="profile-avatar">
+                {% endif %}
+                <div class="dropdown-menu">
+                    <div class="dropdown-header">
+                        <p class="name">{{ current_user.full_name | default('Teacher', true) }}</p>
+                        <p class="email">{{ current_user.email }}</p>
+                    </div>
+                    <a href="/profile">Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="/logout" style="color: var(--danger);">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>Welcome, {{ current_user.full_name | default(current_user.email) }}</h1>
+            <p>Teacher Dashboard - Create exams and evaluate student responses.</p>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div style="margin-top: 1.5rem;">
+                    {% for category, message in messages %}
+                        <div class="{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </header>
+
+        <main class="dashboard-grid">
+            <div class="card">
+                <h2>Create Exam</h2>
+                <form action="/create_exam" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Exam Code</label>
+                        <input type="text" name="exam_code" placeholder="Example: CS101" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Questions</label>
+                        <input type="number" name="total_questions" placeholder="Enter total questions" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Answer Key</label>
+                        <textarea name="answer_key" placeholder="Example: A,B,C,D,A,B"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload Answer Key File</label>
+                        <input type="file" name="answer_key_file" accept=".csv, .txt, .pdf, .doc, .docx, image/*">
+                    </div>
+                    <div class="action-group">
+                        <button type="submit" name="action" value="extract" class="btn btn-outline" formnovalidate>Extract Answers From File</button>
+                        <button type="submit" name="action" value="create" class="btn btn-primary">Create Exam</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Evaluate OMR Sheet</h2>
+                <form action="/evaluate" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Exam Code</label>
+                        <input type="text" name="exam_code" placeholder="Enter exam code" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Student Email</label>
+                        <input type="email" name="student_email" placeholder="Enter student email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload OMR Sheet</label>
+                        <input type="file" name="omr_sheet" accept="image/*" required>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-dark">Check OMR</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <section class="bottom-section">
+            <div class="list-card">
+                <h2 style="margin-bottom: 1.5rem; color: var(--secondary); font-size: 1.25rem;">Created Exams</h2>
+                {% if exams %}
+                    {% for exam in exams %}
+                    <div class="list-item">
+                        <div>
+                            <h4>{{ exam.code }}</h4>
+                            <p>Total Questions: {{ exam.questions }}</p>
+                        </div>
+                        <form action="/generate_omr" method="POST">
+                            <input type="hidden" name="exam_code" value="{{ exam.code }}">
+                            <input type="hidden" name="total_questions" value="{{ exam.questions }}">
+                            <button type="submit" class="btn btn-green btn-sm">Download OMR</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">No exams created yet.</div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 OMR Evaluation System. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
